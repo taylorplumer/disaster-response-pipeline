@@ -23,7 +23,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 
 
-
+import warnings
+warnings.filterwarnings('ignore')
 
 import joblib
 
@@ -81,8 +82,6 @@ def build_model():
     }
 
     cv = GridSearchCV(pipeline, param_grid=parameters)
-    cv.fit(X_train, y_train)
-
     
     return cv
 
@@ -93,10 +92,30 @@ def evaluate_model(model, X_test, Y_test, category_names):
     
     y_pred = model.predict(X_test)
 
-    result = print(classification_report(y_pred, Y_test, target_names= category_names))
+    report = classification_report(y_pred, Y_test, target_names= category_names, output_dict=True)
+    
+    print(report)
 
 
-    return result, y_pred
+    return report
+
+def save_report(report, report_filepath):
+    
+    report_df = pd.DataFrame(report).transpose()
+    
+    report_df.columns = ['f1', 'precision', 'recall', 'support']
+
+    report_df['categories'] = report_df.index
+    
+    report_df = report_df[['categories','f1', 'precision', 'recall', 'support']]
+    
+    report_df.to_csv(report_filepath)
+    
+    
+    return report_df
+    
+    
+    
 
 
 def save_model(model, model_filepath):
@@ -104,8 +123,8 @@ def save_model(model, model_filepath):
 
 
 def main():
-    if len(sys.argv) == 3:
-        database_filepath, model_filepath = sys.argv[1:]
+    if len(sys.argv) == 4:
+        database_filepath, model_filepath, report_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
@@ -117,7 +136,11 @@ def main():
         model.fit(X_train, Y_train)
 
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        report = evaluate_model(model, X_test, Y_test, category_names)
+       
+        
+        print('Saving report...')
+        save_report(report, report_filepath)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)

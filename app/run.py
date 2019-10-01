@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
+from plotly.graph_objs import Bar, Table
 from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
@@ -28,6 +28,7 @@ def tokenize(text):
 # load data
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('InsertTableName', engine)
+report_df = pd.read_csv('../data/report.csv').iloc[:, 1:]
 
 # load model
 model = joblib.load("../models/classifier.pkl")
@@ -43,10 +44,33 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
     
+    
+    # visualization 2 - results from the classification report
+    
+    result_df = report_df 
+    
+    
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
+            'data': [
+                Table(
+                        header=dict(values=list(result_df.columns),
+                        fill_color='paleturquoise',
+                        align='left'),
+                        cells=dict(values=[result_df.categories[:-4],result_df.f1[:-4], result_df.precision[:-4], result_df.recall[:-4], result_df.support[:-4]],
+                        fill_color='lavender',
+                        align='left')
+                     )
+            ],
+
+            'layout': {
+                'title': 'Classification Report Table',
+
+            }
+            },
+            {
             'data': [
                 Bar(
                     x=genre_names,
@@ -64,7 +88,7 @@ def index():
                 }
             }
         }
-    ]
+       ]
     
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
