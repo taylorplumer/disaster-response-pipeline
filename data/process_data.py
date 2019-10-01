@@ -36,9 +36,16 @@ def clean_data(df):
 
     df_dropped_duplicates = df_concat[df_concat.duplicated() != True]
 
-    df = df_dropped_duplicates
+    clean_df = df_dropped_duplicates
     
-    return df
+    
+    for column in clean_df.iloc[:, 4:]:
+        mode = clean_df[column].mode()[0]
+        clean_df[column] = clean_df[column].replace(2,mode)
+    
+    
+    
+    return clean_df
 
 
 

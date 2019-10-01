@@ -48,11 +48,6 @@ def load_data(database_filepath):
     # create labels aka category_names
     category_names = Y.columns
 
-    #convert any 2 values to mode
-
-    for column in Y.columns:
-        mode = Y[column].mode()[0]
-        Y[column] = Y[column].replace(2,mode)
 
     Y = Y.values
     
