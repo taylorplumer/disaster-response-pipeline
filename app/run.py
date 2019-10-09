@@ -131,7 +131,7 @@ def index():
             ],
 
             'layout': {
-                'title': 'Sankey Diagram',
+                'title': 'Message Genre to Category Classification',
                 'yaxis': {
                     'title': "Count"
                 },
