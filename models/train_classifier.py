@@ -50,7 +50,7 @@ def load_data(database_filepath):
     cur = conn.cursor()
 
     # load data from database
-    df = pd.read_sql("SELECT * FROM InsertTableName", con=conn)
+    df = pd.read_sql("SELECT * FROM disaster", con=conn)
 
     conn.commit()
     conn.close()
