@@ -64,11 +64,9 @@ def clean_data(df):
     clean_df = df_dropped_duplicates
 
     # replace any 2 values with the mode of the column
-    binary = [0, 1]
-    for column in clean_df:
+    for column in clean_df.iloc[:, 4:]:
         mode = clean_df[column].mode()[0]
-        non_binary = clean_df[~clean_df[column].isin(binary)][column].tolist()
-        clean_df[column] = clean_df[column].replace(non_binary,list(mode for i in range(len(non_binary))) )
+        clean_df[column] = clean_df[column].replace(2,mode)
 
     return clean_df
 
