@@ -3,7 +3,7 @@
 ### Summary
 This project contains multilingual disaster response messages curated by [Figure Eight](https://www.figure-eight.com/dataset/combined-disaster-response-data/). The data has been encoded with 36 different categories related to disaster response. 
 
-The repository contains working code for running an ETL pipeline and ML pipeline and to run a Flask app locally. Instructions are below.
+The repository contains working code for running an ETL pipeline, ML pipeline, and Flask app locally. Instructions are below.
 
 
 
