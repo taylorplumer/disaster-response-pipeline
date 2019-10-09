@@ -30,6 +30,19 @@ import joblib
 
 
 def load_data(database_filepath):
+
+    """
+    Loads data from sqlite database and creates X,Y variables for model building
+
+    Args:
+        database_filename: the path where to connect to the database to load dataframe
+
+    Returns:
+        X: the message column of the dataframe
+        Y: the 0 and 1 category column values stored in np array
+        category_names: labels for model
+
+    """
     # connect to the database
     conn = sqlite3.connect(database_filepath)
 
@@ -51,12 +64,20 @@ def load_data(database_filepath):
 
 
     Y = Y.values
-    
+
     return X, Y, category_names
 
 
 
 def tokenize(text):
+
+    """
+    Uses nltk to case normalize, lematize, and word tokenize text
+
+    Args:
+        text: the natural language message we are analyzing
+
+    """
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -69,56 +90,97 @@ def tokenize(text):
 
 
 def build_model():
+
+    """
+    Builds pipeline and use grid search to perform multioutputclassification
+
+    Returns:
+        cv: GridSearchCV pipeline with best parameters for the model
+
+    """
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier()))
         ])
-    
+
     parameters = {
     'vect__ngram_range': ((1, 1), (1, 2)),
     'clf__estimator__min_samples_split': [2,4]
-    
+
     }
 
     cv = GridSearchCV(pipeline, param_grid=parameters)
-    
+
     return cv
 
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
 
-    
+    """
+    Evaluates model by providing individual category and summary metrics of model performance
+
+    Args:
+        model: MultiOutputClassifier model
+        X_test: subset of X values withheld from the model building process
+        Y_test: subset of Y values witheld from the model building process and used to evaluate model predictions
+        category_names: labels for model
+
+    Returns:
+        report: classification report with evaluation metrics (f1, precision, recall, support)
+
+    """
     y_pred = model.predict(X_test)
 
     report = classification_report(y_pred, Y_test, target_names= category_names, output_dict=True)
-    
+
     print(report)
 
 
     return report
 
+
+
 def save_report(report, report_filepath):
-    
+
+    """
+    Loads classification report to csv file
+
+    Args:
+        report: classification report returned from evaluate_model function
+        report_filepath: path for where to save report
+
+    Returns:
+        report_df: save dataframe as a csv at specified file path
+
+    """
+
     report_df = pd.DataFrame(report).transpose()
-    
+
     report_df.columns = ['f1', 'precision', 'recall', 'support']
 
     report_df['categories'] = report_df.index
-    
+
     report_df = report_df[['categories','f1', 'precision', 'recall', 'support']]
-    
+
     report_df.to_csv(report_filepath)
-    
-    
+
+
     return report_df
-    
-    
-    
+
 
 
 def save_model(model, model_filepath):
+
+    """
+    Stores model into a pickle file at a designated file path
+
+    Args:
+        model: classifier model
+        model_filepath: path for where to save pickle file
+        
+    """
     joblib.dump(model, model_filepath)
 
 
@@ -137,8 +199,8 @@ def main():
 
         print('Evaluating model...')
         report = evaluate_model(model, X_test, Y_test, category_names)
-       
-        
+
+
         print('Saving report...')
         save_report(report, report_filepath)
 
